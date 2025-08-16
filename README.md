@@ -1,6 +1,6 @@
 # RFID Vault
 
-A Python CLI tool for interfacing with Arduino RFID Reader/Writer devices.
+A cross-platform Python CLI tool for interfacing with Arduino RFID Reader/Writer devices.
 
 ## Features
 
@@ -9,10 +9,28 @@ A Python CLI tool for interfacing with Arduino RFID Reader/Writer devices.
 - Associate UUIDs with custom text
 - Output card data or associated text as keyboard input
 - Persistent storage of cards and associations
+- **Cross-platform support**: Windows, macOS (Intel/Apple Silicon), Linux
+- **Standalone executables**: No Python installation required for end users
 
 ## Setup
 
-### Prerequisites
+### For End Users (Standalone Executables)
+
+Download the appropriate executable for your platform from the [Releases](https://github.com/yourusername/serialRFID/releases) page:
+
+- **Windows**: `RFIDVault_windows.zip`
+- **macOS Intel**: `RFIDVault_macos_intel.zip`
+- **macOS Apple Silicon**: `RFIDVault_macos_arm64.zip`
+- **Linux**: `RFIDVault_linux.zip`
+
+1. Extract the ZIP file
+2. Run the launcher:
+   - Windows: Double-click `LAUNCH.bat`
+   - macOS/Linux: Run `./LAUNCH.sh`
+
+### For Developers
+
+#### Prerequisites
 
 - Python 3.6 or higher
 - pip (Python package installer)
@@ -22,13 +40,26 @@ A Python CLI tool for interfacing with Arduino RFID Reader/Writer devices.
 
 #### Windows
 ```batch
-init_env.bat
+scripts/init_env.bat
 ```
 
 #### Linux/macOS
 ```bash
-chmod +x init_env.sh
-./init_env.sh
+chmod +x scripts/init_env.sh
+./scripts/init_env.sh
+```
+
+### Running the Tool
+
+#### Windows
+```batch
+scripts/run.bat --port COM3 <COMMAND>
+```
+
+#### Linux/macOS
+```bash
+chmod +x scripts/run.sh
+./scripts/run.sh --port /dev/ttyUSB0 <COMMAND>
 ```
 
 ### Manual Setup
@@ -46,6 +77,43 @@ chmod +x init_env.sh
    ```bash
    pip install -r requirements.txt
    ```
+
+## Building and Releasing
+
+### Quick Build
+
+```bash
+# Build for current platform
+make build
+
+# Build for all platforms
+make build-all
+
+# Build for specific platform
+make build-windows
+make build-macos-intel
+make build-macos-arm64
+make build-linux
+```
+
+### Creating a Release
+
+```bash
+# Create a new release (triggers GitHub Actions)
+make release VERSION=1.0.0
+
+# Or use the Python script directly
+python release.py 1.0.0
+```
+
+### GitHub Actions
+
+The project includes automated GitHub Actions that:
+- Build executables for all platforms
+- Create GitHub releases with downloads
+- Upload platform-specific ZIP files
+
+Trigger by pushing a version tag: `git tag v1.0.0 && git push origin v1.0.0`
 
 ## Usage
 
@@ -82,6 +150,15 @@ python rfidvault.py --port COM3 delete-association "12345678"
 - **Windows**: Use `COM3`, `COM4`, etc.
 - **Linux**: Use `/dev/ttyUSB0`, `/dev/ttyACM0`, etc.
 - **macOS**: Use `/dev/tty.usbserial-*`, `/dev/tty.usbmodem*`, etc.
+
+### Cross-Platform Compatibility
+
+The application works on:
+- **Windows 10/11** (x64)
+- **macOS 10.15+** (Intel x64 and Apple Silicon ARM64)
+- **Linux** (x64, glibc-based distributions)
+
+Standalone executables are available for all platforms and don't require Python installation.
 
 ### Keyboard Output
 

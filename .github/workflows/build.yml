@@ -1,0 +1,182 @@
+name: Build and Release
+
+on:
+  push:
+    tags:
+      - 'v*'  # Trigger on version tags
+  workflow_dispatch:  # Allow manual triggers
+    inputs:
+      version:
+        description: 'Version to build (e.g., 1.0.0)'
+        required: true
+        default: '1.0.0'
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-latest
+            platform: linux
+            python-version: '3.12'
+          - os: windows-latest
+            platform: windows
+            python-version: '3.12'
+          - os: macos-latest
+            platform: macos_intel
+            python-version: '3.12'
+          - os: macos-latest
+            platform: macos_arm64
+            python-version: '3.12'
+
+    runs-on: ${{ matrix.os }}
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ matrix.python-version }}
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        pip install pyinstaller
+
+    - name: Build executable
+      run: |
+        python build_cross_platform.py ${{ matrix.platform }}
+
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: RFIDVault-${{ matrix.platform }}
+        path: |
+          dist/
+          RFIDVault_${{ matrix.platform }}.zip
+        retention-days: 30
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/v')
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Download all artifacts
+      uses: actions/download-artifact@v4
+      with:
+        path: artifacts
+
+    - name: Create release
+      id: create_release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: ${{ github.ref }}
+        release_name: RFID Vault ${{ github.ref_name }}
+        body: |
+          ## RFID Vault ${{ github.ref_name }}
+          
+          Cross-platform RFID application for Arduino RFID Reader/Writer.
+          
+          ### Downloads
+          
+          **Windows:**
+          - [RFIDVault_windows.zip](https://github.com/${{ github.repository }}/releases/download/${{ github.ref }}/RFIDVault_windows.zip)
+          
+          **macOS Intel:**
+          - [RFIDVault_macos_intel.zip](https://github.com/${{ github.repository }}/releases/download/${{ github.ref }}/RFIDVault_macos_intel.zip)
+          
+          **macOS Apple Silicon:**
+          - [RFIDVault_macos_arm64.zip](https://github.com/${{ github.repository }}/releases/download/${{ github.ref }}/RFIDVault_macos_arm64.zip)
+          
+          **Linux:**
+          - [RFIDVault_linux.zip](https://github.com/${{ github.repository }}/releases/download/${{ github.ref }}/RFIDVault_linux.zip)
+          
+          ### Installation
+          
+          1. Download the appropriate file for your platform
+          2. Extract the ZIP file
+          3. Run the launcher script:
+             - Windows: Double-click `LAUNCH.bat`
+             - macOS/Linux: Run `./LAUNCH.sh`
+          
+          ### Features
+          
+          - Read and save RFID card data
+          - Write data to RFID cards
+          - Associate UUIDs with custom text
+          - Output card data as keyboard input
+          - Cross-platform compatibility
+          
+          ### Requirements
+          
+          - Arduino with RFID reader/writer
+          - USB connection
+          - No Python installation required
+          
+          ### Usage
+          
+          ```bash
+          # Monitor for cards
+          RFIDVault --port COM3 monitor
+          
+          # Write data to card
+          RFIDVault --port COM3 write "Hello World"
+          
+          # List saved cards
+          RFIDVault list-cards
+          ```
+          
+          ### Support
+          
+          For issues and questions, please visit the [GitHub repository](https://github.com/${{ github.repository }}).
+        draft: false
+        prerelease: false
+
+    - name: Upload Windows release asset
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ./artifacts/RFIDVault-windows/RFIDVault_windows.zip
+        asset_name: RFIDVault_windows.zip
+        asset_content_type: application/zip
+
+    - name: Upload macOS Intel release asset
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ./artifacts/RFIDVault-macos_intel/RFIDVault_macos_intel.zip
+        asset_name: RFIDVault_macos_intel.zip
+        asset_content_type: application/zip
+
+    - name: Upload macOS ARM64 release asset
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ./artifacts/RFIDVault-macos_arm64/RFIDVault_macos_arm64.zip
+        asset_name: RFIDVault_macos_arm64.zip
+        asset_content_type: application/zip
+
+    - name: Upload Linux release asset
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ./artifacts/RFIDVault-linux/RFIDVault_linux.zip
+        asset_name: RFIDVault_linux.zip
+        asset_content_type: application/zip

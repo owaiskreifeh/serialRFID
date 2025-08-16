@@ -1,1 +1,16 @@
 /.vscode
+
+# Virtual Environment
+venv/
+
+# Build outputs
+dist/
+build/
+*.exe
+*.spec
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd

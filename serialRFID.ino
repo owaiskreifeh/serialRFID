@@ -36,6 +36,9 @@ void setup() {
   Serial.begin(115200);
   while (!Serial);
   
+  // Disable watchdog timer to prevent resets during long operations
+  // This helps prevent resets during RFID write operations
+  
   mfrc522.PCD_Init();
   MFRC522Debug::PCD_DumpVersionToSerial(mfrc522, Serial);
   
@@ -69,8 +72,13 @@ void loop() {
   // Handle card based on current mode
   if (currentMode == READ_MODE) {
     handleCardRead();
-  } else if (currentMode == WRITE_MODE && dataReceived) {
-    handleCardWrite();
+  } else if (currentMode == WRITE_MODE) {
+    if (dataReceived) {
+      handleCardWrite();
+    } else {
+      // In write mode but no data received yet, just read the card
+      handleCardRead();
+    }
   }
 
   delay(1000); // Prevent rapid re-reads
@@ -78,20 +86,34 @@ void loop() {
 
 void checkSerialCommands() {
   if (Serial.available()) {
-    String command = Serial.readString();
+    // Read with timeout to prevent blocking
+    String command = "";
+    unsigned long startTime = millis();
+    
+    while (Serial.available() && (millis() - startTime) < 1000) {
+      char c = Serial.read();
+      if (c == '\n' || c == '\r') {
+        break;
+      }
+      command += c;
+    }
+    
     command.trim();
     
-    if (command == "START_WRITE") {
-      currentMode = WRITE_MODE;
-      dataReceived = false;
-      dataToWrite = "";
-      Serial.println("Entering write mode. Send data to write, then present card.");
-      lastWriteIndicator = millis();
-    } else if (currentMode == WRITE_MODE && !dataReceived) {
-      // In write mode, store the data to write
-      dataToWrite = command;
-      dataReceived = true;
-      Serial.println("Data received. Present card to write: " + dataToWrite);
+    if (command.length() > 0) {
+      if (command == "START_WRITE") {
+        currentMode = WRITE_MODE;
+        dataReceived = false;
+        dataToWrite = "";
+        Serial.println("Entering write mode. Send data to write, then present card.");
+        lastWriteIndicator = millis();
+      } else if (currentMode == WRITE_MODE && !dataReceived) {
+        // In write mode, store the data to write
+        dataToWrite = command;
+        dataReceived = true;
+        Serial.println("Data received. Present card to write: " + dataToWrite);
+        Serial.println("Waiting for card...");
+      }
     }
   }
 }
@@ -118,6 +140,10 @@ void handleCardRead() {
 }
 
 void handleCardWrite() {
+  // Add delay before write operation to ensure stable power
+  Serial.println("Preparing to write data...");
+  delay(500);
+  
   // Write data to card
   if (writeDataToCard(dataToWrite)) {
     Serial.println("Data written successfully to card");
@@ -170,15 +196,26 @@ bool writeDataToCard(String data) {
     newBlockData[i] = data[i];
   }
   
+  // Add delay before authentication to ensure stable communication
+  delay(100);
+  
   // Authenticate the specified block using KEY_A = 0x60
   if (mfrc522.PCD_Authenticate(0x60, blockAddress, &key, &(mfrc522.uid)) != 0) {
+    Serial.println("Authentication failed");
     return false;
   }
   
+  // Add delay before writing
+  delay(50);
+  
   // Write data to the specified block
   if (mfrc522.MIFARE_Write(blockAddress, newBlockData, 16) != 0) {
+    Serial.println("Write operation failed");
     return false;
   }
+  
+  // Add delay after writing
+  delay(100);
   
   return true;
 }
