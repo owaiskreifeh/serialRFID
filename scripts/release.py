@@ -111,11 +111,11 @@ def show_help():
 RFID Vault Release Manager
 
 Usage:
-  python release.py <version>
+  python scripts/release.py <version>
 
 Examples:
-  python release.py 1.0.0
-  python release.py 1.2.3
+  python scripts/release.py 1.0.0
+  python scripts/release.py 1.2.3
 
 This script will:
 1. Validate the version format

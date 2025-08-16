@@ -19,7 +19,7 @@ python build_cross_platform.py linux
 ### GitHub Actions Release
 ```bash
 # Create a new release (triggers automated builds)
-python release.py 1.0.0
+python scripts/release.py 1.0.0
 ```
 
 ## 📦 Supported Platforms
@@ -43,22 +43,22 @@ python release.py 1.0.0
 
 2. **Build for Current Platform**
    ```bash
-   python build_cross_platform.py
+   python scripts/build_cross_platform.py
    ```
 
 3. **Build for Specific Platform**
    ```bash
-   python build_cross_platform.py windows
-   python build_cross_platform.py macos_intel
-   python build_cross_platform.py macos_arm64
-   python build_cross_platform.py linux
+   python scripts/build_cross_platform.py windows
+   python scripts/build_cross_platform.py macos_intel
+   python scripts/build_cross_platform.py macos_arm64
+   python scripts/build_cross_platform.py linux
    ```
 
 ### GitHub Actions (Automated)
 
 1. **Create Release**
    ```bash
-   python release.py 1.0.0
+   python scripts/release.py 1.0.0
    ```
 
 2. **Monitor Build**
@@ -232,13 +232,13 @@ python release.py 1.0.0
 ### Version Management
 ```bash
 # Major release
-python release.py 2.0.0
+python scripts/release.py 2.0.0
 
 # Minor release
-python release.py 1.1.0
+python scripts/release.py 1.1.0
 
 # Patch release
-python release.py 1.0.1
+python scripts/release.py 1.0.1
 ```
 
 ---

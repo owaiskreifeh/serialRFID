@@ -103,7 +103,7 @@ make build-linux
 make release VERSION=1.0.0
 
 # Or use the Python script directly
-python release.py 1.0.0
+python scripts/release.py 1.0.0
 ```
 
 ### GitHub Actions
