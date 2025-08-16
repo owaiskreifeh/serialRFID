@@ -113,7 +113,24 @@ The project includes automated GitHub Actions that:
 - Create GitHub releases with downloads
 - Upload platform-specific ZIP files
 
+#### Setup for Releases
+
+To enable automatic releases, ensure your repository has the following settings:
+
+1. **Repository Settings** → **Actions** → **General**
+   - Set "Workflow permissions" to "Read and write permissions"
+   - Enable "Allow GitHub Actions to create and approve pull requests"
+
+2. **Repository Settings** → **Actions** → **General** → **Workflow permissions**
+   - Check "Allow GitHub Actions to create and approve pull requests"
+
+#### Triggering Releases
+
 Trigger by pushing a version tag: `git tag v1.0.0 && git push origin v1.0.0`
+
+#### Alternative: Build Only
+
+If you just want to test builds without creating releases, use the "Build Only" workflow that triggers on pushes to main branch.
 
 ## Usage
 

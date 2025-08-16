@@ -11,6 +11,10 @@ on:
         required: true
         default: '1.0.0'
 
+permissions:
+  contents: write
+  packages: write
+
 jobs:
   build:
     strategy:
@@ -73,40 +77,36 @@ jobs:
       with:
         path: artifacts
 
-    - name: Create release
+    - name: Create Release
       id: create_release
-      uses: actions/create-release@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      uses: actions/github-script@v7
       with:
-        tag_name: ${{ github.ref }}
-        release_name: RFID Vault ${{ github.ref_name }}
-        body: |
-          ## RFID Vault ${{ github.ref_name }}
+        script: |
+          const releaseBody = `## RFID Vault ${context.ref.replace('refs/tags/v', '')}
           
           Cross-platform RFID application for Arduino RFID Reader/Writer.
           
           ### Downloads
           
           **Windows:**
-          - [RFIDVault_windows.zip](https://github.com/${{ github.repository }}/releases/download/${{ github.ref }}/RFIDVault_windows.zip)
+          - [RFIDVault_windows.zip](https://github.com/${context.repo.owner}/${context.repo.repo}/releases/download/${context.ref}/RFIDVault_windows.zip)
           
           **macOS Intel:**
-          - [RFIDVault_macos_intel.zip](https://github.com/${{ github.repository }}/releases/download/${{ github.ref }}/RFIDVault_macos_intel.zip)
+          - [RFIDVault_macos_intel.zip](https://github.com/${context.repo.owner}/${context.repo.repo}/releases/download/${context.ref}/RFIDVault_macos_intel.zip)
           
           **macOS Apple Silicon:**
-          - [RFIDVault_macos_arm64.zip](https://github.com/${{ github.repository }}/releases/download/${{ github.ref }}/RFIDVault_macos_arm64.zip)
+          - [RFIDVault_macos_arm64.zip](https://github.com/${context.repo.owner}/${context.repo.repo}/releases/download/${context.ref}/RFIDVault_macos_arm64.zip)
           
           **Linux:**
-          - [RFIDVault_linux.zip](https://github.com/${{ github.repository }}/releases/download/${{ github.ref }}/RFIDVault_linux.zip)
+          - [RFIDVault_linux.zip](https://github.com/${context.repo.owner}/${context.repo.repo}/releases/download/${context.ref}/RFIDVault_linux.zip)
           
           ### Installation
           
           1. Download the appropriate file for your platform
           2. Extract the ZIP file
           3. Run the launcher script:
-             - Windows: Double-click `LAUNCH.bat`
-             - macOS/Linux: Run `./LAUNCH.sh`
+             - Windows: Double-click \`LAUNCH.bat\`
+             - macOS/Linux: Run \`./LAUNCH.sh\`
           
           ### Features
           
@@ -124,7 +124,7 @@ jobs:
           
           ### Usage
           
-          ```bash
+          \`\`\`bash
           # Monitor for cards
           RFIDVault --port COM3 monitor
           
@@ -133,50 +133,69 @@ jobs:
           
           # List saved cards
           RFIDVault list-cards
-          ```
+          \`\`\`
           
           ### Support
           
-          For issues and questions, please visit the [GitHub repository](https://github.com/${{ github.repository }}).
-        draft: false
-        prerelease: false
+          For issues and questions, please visit the [GitHub repository](https://github.com/${context.repo.owner}/${context.repo.repo}).`;
+          
+          const release = await github.rest.repos.createRelease({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            tag_name: context.ref.replace('refs/tags/', ''),
+            name: \`RFID Vault \${context.ref.replace('refs/tags/v', '')}\`,
+            body: releaseBody,
+            draft: false,
+            prerelease: false
+          });
+          
+          core.setOutput('upload_url', release.data.upload_url);
 
-    - name: Upload Windows release asset
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    - name: Upload Release Assets
+      uses: actions/github-script@v7
       with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: ./artifacts/RFIDVault-windows/RFIDVault_windows.zip
-        asset_name: RFIDVault_windows.zip
-        asset_content_type: application/zip
-
-    - name: Upload macOS Intel release asset
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: ./artifacts/RFIDVault-macos_intel/RFIDVault_macos_intel.zip
-        asset_name: RFIDVault_macos_intel.zip
-        asset_content_type: application/zip
-
-    - name: Upload macOS ARM64 release asset
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: ./artifacts/RFIDVault-macos_arm64/RFIDVault_macos_arm64.zip
-        asset_name: RFIDVault_macos_arm64.zip
-        asset_content_type: application/zip
-
-    - name: Upload Linux release asset
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: ./artifacts/RFIDVault-linux/RFIDVault_linux.zip
-        asset_name: RFIDVault_linux.zip
-        asset_content_type: application/zip
+        script: |
+          const fs = require('fs');
+          const path = require('path');
+          
+          const assets = [
+            {
+              name: 'RFIDVault_windows.zip',
+              path: './artifacts/RFIDVault-windows/RFIDVault_windows.zip'
+            },
+            {
+              name: 'RFIDVault_macos_intel.zip',
+              path: './artifacts/RFIDVault-macos_intel/RFIDVault_macos_intel.zip'
+            },
+            {
+              name: 'RFIDVault_macos_arm64.zip',
+              path: './artifacts/RFIDVault-macos_arm64/RFIDVault_macos_arm64.zip'
+            },
+            {
+              name: 'RFIDVault_linux.zip',
+              path: './artifacts/RFIDVault-linux/RFIDVault_linux.zip'
+            }
+          ];
+          
+          for (const asset of assets) {
+            if (fs.existsSync(asset.path)) {
+              console.log(\`Uploading \${asset.name}...\`);
+              await github.rest.repos.uploadReleaseAsset({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                release_id: (await github.rest.repos.getReleaseByTag({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  tag: context.ref.replace('refs/tags/', '')
+                })).data.id,
+                name: asset.name,
+                data: fs.readFileSync(asset.path),
+                headers: {
+                  'content-type': 'application/zip'
+                }
+              });
+              console.log(\`Successfully uploaded \${asset.name}\`);
+            } else {
+              console.log(\`Warning: \${asset.path} not found, skipping upload\`);
+            }
+          }
