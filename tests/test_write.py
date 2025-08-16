@@ -139,9 +139,9 @@ def main():
     success = test_write_operation(port, data)
     
     if success:
-        print("\n✅ Write test completed successfully!")
+        print("\n[SUCCESS] Write test completed successfully!")
     else:
-        print("\n❌ Write test failed!")
+        print("\n[ERROR] Write test failed!")
         print("\nTroubleshooting tips:")
         print("1. Check power supply - RFID writing requires stable power")
         print("2. Ensure card is properly positioned on the reader")

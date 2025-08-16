@@ -110,7 +110,7 @@ def build_for_platform(target_platform=None):
     
     try:
         subprocess.check_call(cmd)
-        print(f"\n✅ Build completed successfully for {target_platform}!")
+        print(f"\n[SUCCESS] Build completed successfully for {target_platform}!")
         
         # Copy additional files to dist folder
         dist_folder = Path("dist")
@@ -121,18 +121,18 @@ def build_for_platform(target_platform=None):
                 shutil.copy2(file, dist_folder)
                 print(f"Copied {file} to dist folder")
             else:
-                print(f"Warning: {file} not found, skipping copy...")
+                print(f"[WARNING] {file} not found, skipping copy...")
         
         # Create platform-specific launcher
         create_platform_launcher(target_platform, dist_folder)
         
-        print(f"\n📁 Distribution folder created at: dist/")
+        print(f"\n[INFO] Distribution folder created at: dist/")
         print(f"Executable: dist/{exe_name}")
         
         return True
         
     except subprocess.CalledProcessError as e:
-        print(f"❌ Build failed for {target_platform}: {e}")
+        print(f"[ERROR] Build failed for {target_platform}: {e}")
         return False
 
 def create_platform_launcher(platform_name, dist_folder):
@@ -193,14 +193,14 @@ fi
     with open(launcher_path, 'w') as f:
         f.write(launcher_content)
     
-    print(f"Created launcher: {launcher_path}")
+    print(f"[INFO] Created launcher: {launcher_path}")
 
 def create_distribution_package(platform_name):
     """Create a complete distribution package for the platform"""
     dist_folder = Path("dist")
     
     if not dist_folder.exists():
-        print("❌ Dist folder not found. Run build first.")
+        print("[ERROR] Dist folder not found. Run build first.")
         return
     
     # Create a zip file of the distribution
@@ -213,14 +213,14 @@ def create_distribution_package(platform_name):
                 arcname = file_path.relative_to(dist_folder)
                 zipf.write(file_path, arcname)
     
-    print(f"📦 Distribution package created: {zip_name}")
+    print(f"[INFO] Distribution package created: {zip_name}")
 
 def build_all_platforms():
     """Build for all supported platforms"""
     platforms = ["windows", "macos_intel", "macos_arm64", "linux"]
     current_platform = get_platform_info()
     
-    print("🚀 Cross-Platform RFID Application Builder")
+    print("Cross-Platform RFID Application Builder")
     print("=" * 50)
     print(f"Current platform: {current_platform}")
     print()
@@ -244,15 +244,15 @@ def build_all_platforms():
             create_distribution_package(platform_name)
             success_count += 1
         else:
-            print(f"❌ Failed to build for {platform_name}")
+            print(f"[ERROR] Failed to build for {platform_name}")
     
     print(f"\n{'='*50}")
     print(f"Build Summary: {success_count}/{len(platforms)} platforms successful")
     
     if success_count == len(platforms):
-        print("🎉 All platforms built successfully!")
+        print("[SUCCESS] All platforms built successfully!")
     else:
-        print("⚠️  Some platforms failed to build")
+        print("[WARNING] Some platforms failed to build")
     
     return success_count == len(platforms)
 

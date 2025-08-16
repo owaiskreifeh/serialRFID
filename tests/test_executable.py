@@ -13,10 +13,10 @@ def test_executable():
     exe_path = Path("dist/RFIDVault.exe")
     
     if not exe_path.exists():
-        print("❌ Executable not found at dist/RFIDVault.exe")
+        print("[ERROR] Executable not found at dist/RFIDVault.exe")
         return False
     
-    print(f"✅ Executable found: {exe_path}")
+    print(f"[SUCCESS] Executable found: {exe_path}")
     print(f"📏 File size: {exe_path.stat().st_size / (1024*1024):.1f} MB")
     
     # Test if executable can start (without Arduino connected)
@@ -31,7 +31,7 @@ def test_executable():
         )
         
         if result.returncode == 0 or "usage" in result.stdout.lower():
-            print("✅ Executable starts successfully")
+            print("[SUCCESS] Executable starts successfully")
             print("📋 Help output:")
             print(result.stdout[:500] + "..." if len(result.stdout) > 500 else result.stdout)
         else:
@@ -43,7 +43,7 @@ def test_executable():
     except subprocess.TimeoutExpired:
         print("⚠️  Executable took too long to start (may be normal)")
     except Exception as e:
-        print(f"❌ Error testing executable: {e}")
+        print(f"[ERROR] Error testing executable: {e}")
         return False
     
     return True
@@ -66,7 +66,7 @@ def check_dependencies():
         for dep in dependencies:
             if dep in result.stdout:
                 found_deps.append(dep)
-                print(f"✅ {dep} found in executable")
+                print(f"[SUCCESS] {dep} found in executable")
             else:
                 print(f"⚠️  {dep} not found in executable")
         
@@ -84,9 +84,9 @@ def main():
     
     # Test executable
     if test_executable():
-        print("\n✅ Executable test passed!")
+        print("\n[SUCCESS] Executable test passed!")
     else:
-        print("\n❌ Executable test failed!")
+        print("\n[ERROR] Executable test failed!")
         return False
     
     # Check dependencies

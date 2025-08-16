@@ -21,16 +21,16 @@ def print_tree(directory, prefix="", exclude_dirs=None):
         is_last = i == len(items) - 1
         
         if os.path.isdir(path):
-            print(f"{prefix}{'└── ' if is_last else '├── '}{item}/")
+            print(f"{prefix}{'L-- ' if is_last else '+-- '}{item}/")
             if not is_last:
-                print_tree(path, prefix + "│   ", exclude_dirs)
+                print_tree(path, prefix + "|   ", exclude_dirs)
             else:
                 print_tree(path, prefix + "    ", exclude_dirs)
         else:
-            print(f"{prefix}{'└── ' if is_last else '├── '}{item}")
+            print(f"{prefix}{'L-- ' if is_last else '+-- '}{item}")
 
 def main():
-    print("📁 serialRFID Project Structure")
+    print("serialRFID Project Structure")
     print("=" * 40)
     print()
     
@@ -40,13 +40,13 @@ def main():
     print_tree(project_root)
     
     print()
-    print("🔧 Quick Commands:")
+    print("[INFO] Quick Commands:")
     print("  Setup:     scripts/init_env.bat (Windows) or scripts/init_env.sh (Linux/macOS)")
     print("  Run:       scripts/run.bat --port COM3 <command> (Windows)")
     print("  Build:     make build")
     print("  Test:      make test")
     print()
-    print("📖 Documentation:")
+    print("[INFO] Documentation:")
     print("  Main:      README.md")
     print("  Structure: PROJECT_STRUCTURE.md")
     print("  Guides:    docs/")

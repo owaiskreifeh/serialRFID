@@ -62,7 +62,7 @@ def build_executable():
     
     try:
         subprocess.check_call(cmd)
-        print("\n✅ Build completed successfully!")
+        print("\n[SUCCESS] Build completed successfully!")
         print(f"Executable location: dist/RFIDVault.exe")
         
         # Copy additional files to dist folder
@@ -76,11 +76,11 @@ def build_executable():
             else:
                 print(f"Warning: {file} not found, skipping copy...")
         
-        print("\n📁 Distribution folder created at: dist/")
+        print("\n[INFO] Distribution folder created at: dist/")
         print("You can now distribute the entire 'dist' folder")
         
     except subprocess.CalledProcessError as e:
-        print(f"❌ Build failed: {e}")
+        print(f"[ERROR] Build failed: {e}")
         return False
     
     return True
@@ -90,7 +90,7 @@ def create_distribution_package():
     dist_folder = Path("dist")
     
     if not dist_folder.exists():
-        print("❌ Dist folder not found. Run build first.")
+        print("[ERROR] Dist folder not found. Run build first.")
         return
     
     # Create a zip file of the distribution
@@ -103,10 +103,10 @@ def create_distribution_package():
                 arcname = file_path.relative_to(dist_folder)
                 zipf.write(file_path, arcname)
     
-    print(f"📦 Distribution package created: {zip_name}")
+    print(f"[INFO] Distribution package created: {zip_name}")
 
 if __name__ == "__main__":
-    print("🚀 RFID Application Builder")
+    print("RFID Application Builder")
     print("=" * 40)
     
     # Install PyInstaller
@@ -117,11 +117,11 @@ if __name__ == "__main__":
         # Create distribution package
         create_distribution_package()
         
-        print("\n🎉 Build process completed!")
+        print("\n[SUCCESS] Build process completed!")
         print("\nNext steps:")
         print("1. Test the executable: dist/RFIDVault.exe")
         print("2. Distribute the 'dist' folder or the zip file")
         print("3. Users can run RFIDVault.exe without Python installed")
     else:
-        print("\n❌ Build process failed!")
+        print("\n[ERROR] Build process failed!")
         sys.exit(1)

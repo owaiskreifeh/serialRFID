@@ -52,13 +52,13 @@ def update_version_files(version):
         
         with open(setup_py, 'w') as f:
             f.write(content)
-        print("✅ Updated setup.py")
+        print("[SUCCESS] Updated setup.py")
 
 def create_release(version):
     """Create a new release"""
     version = validate_version(version)
     
-    print(f"🚀 Creating release v{version}")
+    print(f"Creating release v{version}")
     print("=" * 40)
     
     # Check if working directory is clean
@@ -69,10 +69,10 @@ def create_release(version):
             text=True
         )
         if result.stdout.strip():
-            print("❌ Working directory is not clean. Please commit or stash changes.")
+            print("[ERROR] Working directory is not clean. Please commit or stash changes.")
             return False
     except Exception as e:
-        print(f"❌ Error checking git status: {e}")
+        print(f"[ERROR] Error checking git status: {e}")
         return False
     
     # Update version files
@@ -82,9 +82,9 @@ def create_release(version):
     try:
         subprocess.run(["git", "add", "."], check=True)
         subprocess.run(["git", "commit", "-m", f"Bump version to {version}"], check=True)
-        print("✅ Committed version changes")
+        print("[SUCCESS] Committed version changes")
     except subprocess.CalledProcessError as e:
-        print(f"❌ Error committing changes: {e}")
+        print(f"[ERROR] Error committing changes: {e}")
         return False
     
     # Create and push tag
@@ -92,12 +92,12 @@ def create_release(version):
         subprocess.run(["git", "tag", f"v{version}"], check=True)
         subprocess.run(["git", "push", "origin", "main"], check=True)
         subprocess.run(["git", "push", "origin", f"v{version}"], check=True)
-        print("✅ Created and pushed tag")
+        print("[SUCCESS] Created and pushed tag")
     except subprocess.CalledProcessError as e:
-        print(f"❌ Error creating tag: {e}")
+        print(f"[ERROR] Error creating tag: {e}")
         return False
     
-    print(f"\n🎉 Release v{version} created successfully!")
+    print(f"\n[SUCCESS] Release v{version} created successfully!")
     print("\nNext steps:")
     print("1. GitHub Actions will automatically build and create a release")
     print("2. Check the Actions tab in your GitHub repository")
@@ -146,10 +146,10 @@ def main():
         success = create_release(version)
         sys.exit(0 if success else 1)
     except ValueError as e:
-        print(f"❌ {e}")
+        print(f"[ERROR] {e}")
         sys.exit(1)
     except KeyboardInterrupt:
-        print("\n❌ Release cancelled by user")
+        print("\n[ERROR] Release cancelled by user")
         sys.exit(1)
 
 if __name__ == "__main__":

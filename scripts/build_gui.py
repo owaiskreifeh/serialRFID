@@ -27,7 +27,7 @@ def launch_gui():
         print(f"Error launching GUI: {e}")
 
 if __name__ == "__main__":
-    print("🎨 Auto-py-to-exe GUI Builder")
+    print("Auto-py-to-exe GUI Builder")
     print("=" * 30)
     print("This will open a GUI where you can:")
     print("1. Select rfidvault.py as your script")
